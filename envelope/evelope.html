@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Day card</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Annie+Use+Your+Telescope&family=Petemoss&family=Roboto:ital,wght@0,100..900;1,100..900&family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Roboto", serif;
+            background-color: #FFC6C6;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Heart rain container */
+        .heart-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0;
+            color: #ff4d6d;
+            animation: fallSlow 5s linear forwards;
+            filter: drop-shadow(0 0 10px rgba(255, 77, 109, 0.5));
+            user-select: none;
+            will-change: transform, opacity;
+        }
+
+        /* Faster heart fall */
+        @keyframes fallSlow {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+
+        /* Make envelope appear above rain */
+        .envelope {
+            z-index: 10;
+        }
+
+        /* Audio element - hidden */
+        #bgMusic {
+            display: none;
+        }
+
+        .card-wrapper {
+            perspective: 1000px;
+            transform: rotate(-90deg);
+        }
+
+        .card {
+            width: 180px;
+            height: 280px;
+            background-color: #fff;
+            border: 1px solid;
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: transform 250ms;
+            box-shadow: inset 5px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Card cover styling */
+        .card-cover {
+            position: absolute;
+            inset: 0;
+            text-align: center;
+            outline: 1px solid #000;
+            transform-style: preserve-3d;
+            transform-origin: left;
+            transition: transform 500ms 0ms;
+        }
+
+        .card-side {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            background-color: #fff;
+            display: grid;
+            place-items: center;
+        }
+
+        .next-btn {
+            position: absolute;
+            bottom: -90px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 18px;
+            font-size: 14px;
+            border: none;
+            border-radius: 20px;
+            background-color: #ff4d6d;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            z-index: 999;
+        }
+
+        .next-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Open state animations - only triggered by class, not hover */
+        .envelope.open .card {
+            transform: rotateY(-15deg);
+            transition-delay: 1750ms;
+        }
+
+        .envelope.open .card-cover {
+            transform: rotateY(-135deg);
+            transition-delay: 2250ms;
+        }
+
+        .envelope.open .card-wrapper {
+            animation: show-card 1000ms 600ms forwards;
+        }
+
+        .envelope.open .envelope-lid-secondary {
+            transform: rotateX(180deg);
+            transition-delay: 100ms;
+            animation: open-lid-stacking 500ms forwards;
+        }
+
+        .card-side-secondary {
+            background-color: #fff;
+            transform: rotateY(180deg);
+            box-shadow: inset -5px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            position: relative;
+            font-weight: 250;
+            text-align: center;
+            user-select: none;
+        }
+
+        .card-title span {
+            display: block;
+        }
+
+        .card-title-secondary{
+            font-size: 16px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .card-title-main {
+            font-family: "Petemoss", serif;
+            font-size: 55px;
+            font-weight: 400;
+        }
+
+        .card-title-apostrophe {
+            position: absolute;
+            top: 34px;
+            right: 8px;
+            font-size: 8px;
+        }
+
+        /* Card body styling */
+        .card-body {
+            font-family: "Shantell Sans", serif;
+            padding: 14px;
+        }
+
+        .card-body p {
+            font-size: 10px;
+            font-weight: 300;
+        }
+
+        .card-body p+p {
+            margin-top: 10px;
+        }
+
+        /* Envelope styling */
+        .envelope {
+            width: 300px;
+            height: 200px;
+            background-color: #fff;
+            display: grid;
+            place-content: center;
+            cursor: default;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 0 1px #000;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-top: 75px solid transparent;
+            border-right: 150px solid white;
+            border-bottom: 125px solid white;
+            border-left: 150px solid white;
+        }
+
+        /* Keyframes */
+        @keyframes show-card {
+            50% {
+                transform: translateY(-75%) rotate(-90deg);
+                z-index: -1;
+            }
+            100% {
+                transform: translateY(0) rotate(0deg);
+                z-index: 10;
+            }
+        }
+
+        /* Card lid styling */
+        .envelope-lid {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .envelope-lid::before,
+        .envelope-lid::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 1px;
+            height: calc(100% - 31.85px);
+            background-color: #000;
+        }
+
+        .envelope-lid::before {
+            left: 0;
+            transform: rotate(-63.1deg);
+            transform-origin: top left;
+        }
+
+        .envelope-lid::after {
+            right: 0;
+            transform: rotate(63.1deg);
+            transform-origin: top right;
+        }
+
+        .envelope-lid-secondary {
+            background-color: #fff;
+            clip-path: polygon(50% 38%, 0 0, 100% 0);
+            transition: transform 500ms 1000ms;
+            transform-origin: top;
+        }
+
+        @keyframes open-lid-stacking {
+            50% {
+                z-index: 1;
+            }
+            100% {
+                z-index: -1;
+            }
+        }
+
+        /* Heart Seal - FIXED: No image needed */
+        .heart-seal {
+            position: absolute;
+            top: 37%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #ff4d6d;
+            border-radius: 50%;
+            z-index: 2;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        /* Heart seal inner heart */
+        .heart-seal::after {
+            content: "❤️";
+            font-size: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .heart {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Music (hidden) -->
+    <audio id="bgMusic" loop preload="auto">
+    <source src="mahal.mp3" type="audio/mpeg">
+</audio>
+    
+    <!-- Heart Rain Container -->
+    <div class="heart-rain" id="heartRain"></div>
+    
+    <div class="envelope">
+        <div class="envelope-lid"></div>
+        <div class="envelope-lid envelope-lid-secondary"></div>
+        <div class="card-wrapper">
+            <div class="card">
+                <div class="card-cover">
+                    <div class="card-side card-side-primary">
+                        <h1 class="card-title">
+                            <span class="card-title-secondary">Happy</span>
+                            <span class="card-title-main">Valentines <span
+                                    class="card-title-apostrophe">❤️</span></span>
+                            <span class="card-title-secondary">Day</span>
+                        </h1>
+                    </div>
+                    <div class="card-side card-side-secondary"></div>
+                </div>
+                <div class="card-body">
+                    <p>To my crush,</p>
+                  <p>Happy Valentine’s Day!!!</p>  
+                    <p> I just want to be honest this Valentine’s Day — I like you.
+You make my days brighter, and I always smile when I think of you.
+I’d love the chance to be closer to you and share more moments together.
+No pressure, I just wanted to let you know what’s in my heart.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="heart-seal" id="heartSeal"></div>
+        <button class="next-btn" id="nextBtn">Next 💐</button>
+    </div>
+
+    <script>
+        // ALL JAVASCRIPT IN ONE PLACE - NO ERRORS
+        
+        // ========== ELEMENTS ==========
+        const envelope = document.querySelector('.envelope');
+        const heartSeal = document.getElementById('heartSeal');
+        const nextBtn = document.getElementById('nextBtn');
+        const heartRain = document.getElementById('heartRain');
+        const bgMusic = document.getElementById('bgMusic');
+
+        // ========== HEART RAIN EFFECT ==========
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            
+            // Random heart emoji
+            const hearts = ['❤️', '💖', '💗', '💓', '💕', '💝', '💘', '💞'];
+            heart.innerHTML = hearts[Math.floor(Math.random() * hearts.length)];
+            
+            // Random starting position
+            heart.style.left = Math.random() * 100 + '%';
+            
+            // Random size
+            const size = 20 + Math.random() * 20;
+            heart.style.fontSize = size + 'px';
+            
+            // Animation duration
+            const duration = 3 + Math.random() * 3;
+            heart.style.animation = `fallSlow ${duration}s linear forwards`;
+            
+            // Random delay
+            heart.style.animationDelay = Math.random() * 2 + 's';
+            
+            heartRain.appendChild(heart);
+            
+            // Remove heart after animation
+            setTimeout(() => {
+                if (heart.parentNode) {
+                    heart.remove();
+                }
+            }, (duration + 2) * 1000);
+        }
+
+        // Start heart rain immediately
+        function startHeartRain() {
+            // Create initial batch
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    createHeart();
+                }, i * 100);
+            }
+            
+            // Continue creating hearts frequently
+            setInterval(createHeart, 800);
+        }
+
+        // Start heart rain
+        startHeartRain();
+
+        // ========== MUSIC SETUP ==========
+        // Set initial volume
+        if (bgMusic) {
+            bgMusic.volume = 0.3;
+        }
+
+        // Function to play music
+        function playMusic() {
+            if (bgMusic) {
+                bgMusic.play().catch(error => {
+                    console.log('Music play failed - this is normal if browser blocks autoplay');
+                });
+            }
+        }
+
+        // ========== MAIN FLOW - HEART CLICK ==========
+        if (heartSeal) {
+            heartSeal.addEventListener('click', () => {
+                // Prevent multiple clicks
+                if (envelope.classList.contains('open')) return;
+
+                // Play music
+                playMusic();
+
+                // Open envelope animation
+                envelope.classList.add('open');
+
+                // Hide heart smoothly
+                heartSeal.style.opacity = '0';
+
+                // Show Next button AFTER animation
+                setTimeout(() => {
+                    if (nextBtn) {
+                        nextBtn.classList.add('show');
+                    }
+                }, 3300);
+            });
+        }
+
+        // ========== NEXT PAGE REDIRECT ==========
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                // Stop music before leaving
+                if (bgMusic) {
+                    bgMusic.pause();
+                    bgMusic.currentTime = 0;
+                }
+                
+                // Redirect - CHANGE THIS TO YOUR ACTUAL NEXT PAGE
+                window.location.href =  "../flower/flower.html" 
+            });
+        }
+
+        // ========== STOP MUSIC WHEN LEAVING PAGE ==========
+        window.addEventListener('beforeunload', () => {
+            if (bgMusic) {
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
+            }
+        });
+        
+        // Stop when page is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && bgMusic) {
+                bgMusic.pause();
+            }
+        });
+    </script>
+</body>
+</html>
